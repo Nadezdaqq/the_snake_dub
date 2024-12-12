@@ -64,7 +64,7 @@ class Apple(GameObject):
         self.position = self.randomize_position()
 
     def randomize_position(self):
-        """Генерирует положения яблока """
+        """Генерирует положения яблока."""
         self.position = (
             randint(0, (GRID_WIDTH - 1)) * GRID_SIZE,
             randint(0, (GRID_HEIGHT - 1)) * GRID_SIZE
@@ -133,6 +133,7 @@ class Snake(GameObject):
             self.remove_tail()
 
     def remove_tail(self):
+        """Убирает хвост."""
         remove_tail = pygame.Rect(self.positions.pop(),
                                   (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, remove_tail)
@@ -179,7 +180,7 @@ def get_score(score):
     score_rectangle = value.get_rect()
     pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, score_rectangle)
     screen.blit(value, score_rectangle)
-    
+
 
 def main():
     """Отвечает за основной цикл игры."""
