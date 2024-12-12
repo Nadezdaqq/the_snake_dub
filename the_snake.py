@@ -209,6 +209,7 @@ def main():
         if snake.get_head_position() in snake.positions[1:]:
             snake.reset()
             apple.randomize_position()
+            score = 0
 
         if snake.get_head_position() == poison_apple.position:
             if snake.lenght > 1:
