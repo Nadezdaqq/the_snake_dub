@@ -68,24 +68,22 @@ class GameObject:
 class Apple(GameObject):
     """Класс, описывающий яблоко."""
 
-    def __init__(self, body_color=APPLE_COLOR, occupied_cells=None):
+    def __init__(self, position=None, body_color=APPLE_COLOR,
+                 occupied_cells=None):
         """Конструктор класса яблока."""
-        super().__init__(self, body_color)
-        if occupied_cells is None:
-            occupied_cells = []
-        self.randomize_position(occupied_cells=occupied_cells)
+        super().__init__(position, body_color)
+        self.randomize_position(occupied_cells)
 
-    def randomize_position(self, occupied_cells=[CENTRE]):
+    def randomize_position(self, *occupied_cells):
         """Генерирует положения яблока."""
-        self.position = (
-            randint(0, (GRID_WIDTH - 1)) * GRID_SIZE,
-            randint(0, (GRID_HEIGHT - 1)) * GRID_SIZE
-        )
-        while self.position in occupied_cells:
-            self.position = (
+        while True:
+            place = (
                 randint(0, (GRID_WIDTH - 1)) * GRID_SIZE,
                 randint(0, (GRID_HEIGHT - 1)) * GRID_SIZE
             )
+            if place not in occupied_cells:
+                self.position = place
+                break
 
     def draw(self):
         """Отрисовывает объекты классса яблока."""
@@ -97,12 +95,10 @@ class Apple(GameObject):
 class PoisonApple(Apple):
     """Класс отравленного яблока."""
 
-    def __init__(self, body_color=POISON_COLOR, occupied_cells=None):
+    def __init__(self, position=None, body_color=POISON_COLOR,
+                 occupied_cells=None):
         """Конструктор отравленного яблока."""
-        super().__init__(body_color)
-        if occupied_cells is None:
-            occupied_cells = []
-        self.randomize_position(occupied_cells=occupied_cells)
+        super().__init__(position, body_color, occupied_cells)
 
 
 class Snake(GameObject):
@@ -144,18 +140,16 @@ class Snake(GameObject):
         """Отвечает за передвижение змейки по полю."""
         head_x, head_y = self.get_head_position()
         direction_x, direction_y = self.direction
-        self.position = (
+        new_position = (
             (head_x + (direction_x * GRID_SIZE)) % SCREEN_WIDTH,
             (head_y + (direction_y * GRID_SIZE)) % SCREEN_HEIGHT)
-        self.positions.insert(0, self.position)
+        self.positions.insert(0, new_position)
         self.last = self.positions.pop() if len(
             self.positions) > self.lenght else None
 
     def get_head_position(self):
         """Определение положения головы змейки."""
-        return self.position
-        # Если установить индекс [0],
-        # возникает ошибка при распаковке в функции self.move.
+        return self.positions[0]
 
     def reset(self):
         """Возврат змейки на стартовое положение."""
@@ -209,25 +203,24 @@ def main():
         if snake.get_head_position() == apple.position:
             snake.lenght += 1
             score += 1
-            apple.randomize_position()
+            apple.randomize_position(snake.positions, poison_apple.position)
 
         elif snake.get_head_position() in snake.positions[1:]:
             screen.fill(BOARD_BACKGROUND_COLOR)
             snake.reset()
-            apple.randomize_position()
-            poison_apple.randomize_position()
+            apple.randomize_position(snake.positions, poison_apple.position)
+            poison_apple.randomize_position(snake.positions, apple.position)
             score = 0
 
         elif snake.get_head_position() == poison_apple.position:
             if snake.lenght > 1:
                 snake.lenght -= 1
             score -= 1
-            poison_apple.randomize_position()
+            poison_apple.randomize_position(snake.positions, apple.position)
 
         apple.draw()
         snake.draw()
         poison_apple.draw()
-
         pg.display.update()
 
 
