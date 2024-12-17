@@ -72,17 +72,19 @@ class Apple(GameObject):
                  occupied_cells=None):
         """Конструктор класса яблока."""
         super().__init__(position, body_color)
-        self.randomize_position(occupied_cells)
+        self.occupied_cells = occupied_cells
+        if occupied_cells is None:
+            occupied_cells = []
+        self.randomize_position(occupied_cells=occupied_cells)
 
-    def randomize_position(self, *occupied_cells):
+    def randomize_position(self, occupied_cells):
         """Генерирует положения яблока."""
         while True:
-            place = (
+            self.position = (
                 randint(0, (GRID_WIDTH - 1)) * GRID_SIZE,
                 randint(0, (GRID_HEIGHT - 1)) * GRID_SIZE
             )
-            if place not in occupied_cells:
-                self.position = place
+            if self.position not in occupied_cells:
                 break
 
     def draw(self):
@@ -188,9 +190,10 @@ def main():
     """Отвечает за основной цикл игры."""
     # Инициализация PyGame:
     pg.init()
-    apple = Apple()
     snake = Snake()
-    poison_apple = PoisonApple()
+    apple = Apple(occupied_cells=snake.positions)
+    poison_apple = PoisonApple(occupied_cells=[
+        snake.positions, apple.position])
     score = 0
 
     while True:
@@ -199,27 +202,29 @@ def main():
         snake.move()
         snake.update_direction()
         get_score(score)
+        current_occupied_cells = [
+            snake.positions, apple.position, poison_apple.position]
 
         if snake.get_head_position() == apple.position:
             snake.lenght += 1
             score += 1
-            apple.randomize_position(snake.positions, poison_apple.position)
+            apple.randomize_position(current_occupied_cells)
 
         elif snake.get_head_position() in snake.positions[1:]:
             screen.fill(BOARD_BACKGROUND_COLOR)
             snake.reset()
-            apple.randomize_position(snake.positions, poison_apple.position)
-            poison_apple.randomize_position(snake.positions, apple.position)
+            apple.randomize_position(current_occupied_cells)
+            poison_apple.randomize_position(current_occupied_cells)
             score = 0
 
         elif snake.get_head_position() == poison_apple.position:
             if snake.lenght > 1:
                 snake.lenght -= 1
             score -= 1
-            poison_apple.randomize_position(snake.positions, apple.position)
+            poison_apple.randomize_position(current_occupied_cells)
 
-        apple.draw()
         snake.draw()
+        apple.draw()
         poison_apple.draw()
         pg.display.update()
 
