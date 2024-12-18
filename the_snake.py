@@ -193,7 +193,7 @@ def main():
     snake = Snake()
     apple = Apple(occupied_cells=snake.positions)
     poison_apple = PoisonApple(occupied_cells=[
-        snake.positions, apple.position])
+        *snake.positions, apple.position])
     score = 0
 
     while True:
@@ -203,7 +203,7 @@ def main():
         snake.update_direction()
         get_score(score)
         current_occupied_cells = [
-            snake.positions, apple.position, poison_apple.position]
+            *snake.positions, apple.position, poison_apple.position]
 
         if snake.get_head_position() == apple.position:
             snake.lenght += 1
@@ -213,8 +213,8 @@ def main():
         elif snake.get_head_position() in snake.positions[1:]:
             screen.fill(BOARD_BACKGROUND_COLOR)
             snake.reset()
-            apple.randomize_position(current_occupied_cells)
-            poison_apple.randomize_position(current_occupied_cells)
+            apple.randomize_position(snake.positions)
+            poison_apple.randomize_position([*snake.positions, apple.position])
             score = 0
 
         elif snake.get_head_position() == poison_apple.position:
